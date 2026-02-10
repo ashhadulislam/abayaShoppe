@@ -104,10 +104,22 @@ elif page == "Shortlisted Images":
         st.info("No images selected yet.")
     else:
         cols = st.columns(4)
+        selection_changed = False
 
         for idx, img_path in enumerate(selected):
             with cols[idx % 4]:
                 st.image(str(img_path), use_container_width=True)
+
+                if st.button(
+                    "❌ Remove",
+                    key=f"remove_{img_path.name}"
+                ):
+                    st.session_state.selected_images.remove(img_path.name)
+                    selection_changed = True
+                    st.rerun()
+
+        if selection_changed:
+            save_selections_if_changed(st.session_state.selected_images)
 
         # --------------------
         # Download ZIP
