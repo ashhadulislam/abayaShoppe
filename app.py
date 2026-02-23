@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from collections import defaultdict
 
-IMAGE_FOLDER = "AbayaBGRemoved"
+IMAGE_FOLDER = "AbayaThumbs"
 
 # -------------------------
 # Prices Dictionary
@@ -91,10 +91,12 @@ style_info = {
 # -------------------------
 # Build Catalog
 # -------------------------
+@st.cache_data
 def build_catalog():
-    catalog = defaultdict(lambda: defaultdict(list))
+    catalog = {}
 
     files = os.listdir(IMAGE_FOLDER)
+
     for f in files:
         if not f.endswith(".png"):
             continue
@@ -105,6 +107,13 @@ def build_catalog():
         if len(parts) == 3:
             design = parts[0]
             item = parts[1]
+
+            if design not in catalog:
+                catalog[design] = {}
+
+            if item not in catalog[design]:
+                catalog[design][item] = []
+
             catalog[design][item].append(f)
 
     return catalog
