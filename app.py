@@ -1,137 +1,147 @@
 import streamlit as st
-from pathlib import Path
-import zipfile
-import io
+import os
+from collections import defaultdict
 
-# --------------------
-# Config
-# --------------------
-st.set_page_config(page_title="Abaya Selector", layout="wide")
+IMAGE_FOLDER = "AbayaBGRemoved"
 
-IMAGES_DIR = Path("images")
-IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
-SELECTION_FILE = Path("selected_images.txt")
+# -------------------------
+# Prices Dictionary
+# -------------------------
+prices = {
+    "minto001": 1920,
+    "mlb001": 2250,
+    "cy001": 2175,
+    "cnida001": 3075,
+    "zoom001": 2325,
+    "bnida001": 2775,
+    "cnida002": 2475,
+    "slf001": 2325,
+    "tktk001": 2400,
+    "imp001": 4125,
+    "mlb002": 2475,
+    "mlb003": 2475,
+    "blk001": 2550,
+    "blk002": 3600,
+    "blk003": 2775,
+}
 
-# --------------------
-# Helpers
-# --------------------
-def load_selections():
-    if SELECTION_FILE.exists():
-        return set(SELECTION_FILE.read_text().splitlines())
-    return set()
+style_info = {
+    "minto001": {
+        "name": "Mint Coat Abaya",
+        "desc": "Structured coat-style abaya with a modern silhouette. Perfect for elevated everyday wear."
+    },
+    "mlb001": {
+        "name": "Malbara Essential",
+        "desc": "Crafted in premium Malbara fabric, offering a smooth flow and refined elegance."
+    },
+    "mlb002": {
+        "name": "Malbara Classic",
+        "desc": "Soft Malbara fabric with graceful drape. Lightweight and ideal for daily sophistication."
+    },
+    "mlb003": {
+        "name": "Malbara Self Design",
+        "desc": "Malbara fabric with subtle self-print texture for understated elegance."
+    },
+    "cy001": {
+        "name": "Crushed Silk Flow",
+        "desc": "Crushed-texture fabric that adds movement and dimension to a timeless abaya silhouette."
+    },
+    "cnida001": {
+        "name": "Korean Nida Premium",
+        "desc": "High-quality Korean Nida fabric known for its wrinkle-free finish and smooth luxurious feel."
+    },
+    "cnida002": {
+        "name": "Korean Nida Signature",
+        "desc": "An elegant variation of Korean Nida with structured fall and refined detailing."
+    },
+    "bnida001": {
+        "name": "Black Korean Nida",
+        "desc": "Classic black abaya in premium Korean Nida fabric. Smooth, structured and graceful."
+    },
+    "zoom001": {
+        "name": "Zoom Style Abaya",
+        "desc": "Modern cut with contemporary detailing, designed for confident modest wear."
+    },
+    "slf001": {
+        "name": "Self Design Abaya",
+        "desc": "Elegant self-textured fabric that adds subtle design without overpowering simplicity."
+    },
+    "tktk001": {
+        "name": "Stone Detail Abaya",
+        "desc": "Statement abaya featuring delicate stone embellishments for festive occasions."
+    },
+    "imp001": {
+        "name": "UAE Imported Luxury",
+        "desc": "Premium imported abaya with superior craftsmanship and elegant finishing."
+    },
+    "blk001": {
+        "name": "Black Koti Style",
+        "desc": "Layered koti-style abaya combining structure and modest sophistication."
+    },
+    "blk002": {
+        "name": "Black Statement Edition",
+        "desc": "Bold black abaya with modern logo-inspired detailing."
+    },
+    "blk003": {
+        "name": "Black Handwork Abaya",
+        "desc": "Handworked detailing on classic black fabric for refined festive elegance."
+    },
+}
 
-def save_selections_if_changed(new_selection):
-    old_selection = load_selections()
-    if new_selection != old_selection:
-        SELECTION_FILE.write_text("\n".join(sorted(new_selection)))
+# -------------------------
+# Build Catalog
+# -------------------------
+def build_catalog():
+    catalog = defaultdict(lambda: defaultdict(list))
 
-# --------------------
-# Load images
-# --------------------
-image_files = sorted(
-    [p for p in IMAGES_DIR.iterdir() if p.suffix.lower() in IMAGE_EXTENSIONS]
-)
+    files = os.listdir(IMAGE_FOLDER)
+    for f in files:
+        if not f.endswith(".png"):
+            continue
+        
+        name = f.replace(".png", "")
+        parts = name.split("_")
 
-# --------------------
-# Session state init
-# --------------------
-if "selected_images" not in st.session_state:
-    st.session_state.selected_images = load_selections()
+        if len(parts) == 3:
+            design = parts[0]
+            item = parts[1]
+            catalog[design][item].append(f)
 
-# --------------------
-# Sidebar Navigation
-# --------------------
-page = st.sidebar.radio(
-    "Navigation",
-    ["All Images", "Shortlisted Images"]
-)
+    return catalog
 
-# --------------------
-# Page 1: All Images
-# --------------------
-if page == "All Images":
-    st.title("All Abaya Images")
+catalog = build_catalog()
 
-    # Clear all button
-    if st.button("🧹 Clear all selections"):
-        st.session_state.selected_images.clear()
-        save_selections_if_changed(st.session_state.selected_images)
-        st.rerun()
+# -------------------------
+# UI
+# -------------------------
+st.set_page_config(layout="wide")
+st.title("Abaya Collection")
 
-    if not image_files:
-        st.warning("No images found in the images folder.")
-    else:
+for design in sorted(catalog.keys()):
+    
+    st.markdown("---")
+
+    info = style_info.get(design, {})
+    title = info.get("name", design.upper())
+    description = info.get("desc", "")
+
+    st.header(title)
+    st.write(description)
+
+    price = prices.get(design, "N/A")
+    st.subheader(f"₹ {price}")
+
+    items = sorted(catalog[design].keys())
+
+    for item in items:
+        st.markdown(f"### Variant {item}")
+
+        images = sorted(catalog[design][item])
+
         cols = st.columns(4)
-
-        selection_changed = False
-
-        for idx, img_path in enumerate(image_files):
-            with cols[idx % 4]:
-                st.image(str(img_path), use_container_width=True)
-
-                key = f"select_{img_path.name}"
-                checked = img_path.name in st.session_state.selected_images
-
-                new_checked = st.checkbox(
-                    "Select",
-                    value=checked,
-                    key=key
+        for i, img in enumerate(images):
+            with cols[i % 4]:
+                st.image(
+                    os.path.join(IMAGE_FOLDER, img),
+                    use_container_width=True
                 )
-
-                if new_checked and not checked:
-                    st.session_state.selected_images.add(img_path.name)
-                    selection_changed = True
-                elif not new_checked and checked:
-                    st.session_state.selected_images.discard(img_path.name)
-                    selection_changed = True
-
-        if selection_changed:
-            save_selections_if_changed(st.session_state.selected_images)
-
-        st.success(f"Selected images: {len(st.session_state.selected_images)}")
-
-# --------------------
-# Page 2: Shortlisted Images
-# --------------------
-elif page == "Shortlisted Images":
-    st.title("Shortlisted Abayas")
-
-    selected = [
-        p for p in image_files if p.name in st.session_state.selected_images
-    ]
-
-    if not selected:
-        st.info("No images selected yet.")
-    else:
-        cols = st.columns(4)
-        selection_changed = False
-
-        for idx, img_path in enumerate(selected):
-            with cols[idx % 4]:
-                st.image(str(img_path), use_container_width=True)
-
-                if st.button(
-                    "❌ Remove",
-                    key=f"remove_{img_path.name}"
-                ):
-                    st.session_state.selected_images.remove(img_path.name)
-                    selection_changed = True
-                    st.rerun()
-
-        if selection_changed:
-            save_selections_if_changed(st.session_state.selected_images)
-
-        # --------------------
-        # Download ZIP
-        # --------------------
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            for img_path in selected:
-                zip_file.write(img_path, arcname=img_path.name)
-
-        st.download_button(
-            label="⬇️ Download Selected Images",
-            data=zip_buffer.getvalue(),
-            file_name="selected_abayas.zip",
-            mime="application/zip"
-        )
