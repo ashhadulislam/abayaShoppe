@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 
 IMAGE_FOLDER = "AbayaThumbs"
+st.set_page_config(layout="wide")
 
 # -------------------------
 # Prices Dictionary
@@ -96,6 +97,7 @@ def build_catalog():
     catalog = {}
 
     files = os.listdir(IMAGE_FOLDER)
+    files.sort(reverse=True)
 
     for f in files:
         if not f.endswith(".png"):
@@ -123,10 +125,24 @@ catalog = build_catalog()
 # -------------------------
 # UI
 # -------------------------
-st.set_page_config(layout="wide")
+
+
+st.markdown("""
+<style>
+.image-card {
+    background-color: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 st.title("Abaya Collection")
 
-for design in sorted(catalog.keys()):
+#for design in sorted(catalog.keys()):
+for design in catalog.keys():    
     
     st.markdown("---")
 
