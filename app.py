@@ -188,6 +188,25 @@ for design in catalog.keys():
         cols = st.columns(4)
         variant_id = f"{design}_{item}"
         is_sold = variant_id in sold_out
+        if not is_sold:
+            whatsapp_url = f"https://wa.me/916291426885?text=Hi%20I%20am%20interested%20in%20{title}%20Variant%20{item}"
+            st.markdown(
+                f"""
+                <a href="{whatsapp_url}" target="_blank">
+                    <button style="
+                        background-color:#25D366;
+                        color:white;
+                        padding:10px 18px;
+                        border:none;
+                        border-radius:6px;
+                        font-weight:bold;
+                        cursor:pointer;">
+                        Order on WhatsApp
+                    </button>
+                </a>
+                """,
+                unsafe_allow_html=True
+            )            
 
         cols = st.columns(4)
 
@@ -203,7 +222,7 @@ for design in catalog.keys():
                         use_container_width=True,
                         output_format="PNG"
                     )
-                else:
+                else:                    
                     st.image(
                         os.path.join(IMAGE_FOLDER, img),
                         use_container_width=True
