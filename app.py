@@ -5,6 +5,32 @@ from collections import defaultdict
 IMAGE_FOLDER = "AbayaThumbs"
 st.set_page_config(layout="wide")
 
+
+st.markdown("""
+<style>
+.product-card {
+    position: relative;
+}
+
+.sold-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #c0392b;
+    color: white;
+    padding: 6px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.sold-img {
+    opacity: 0.4;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # -------------------------
 # Prices Dictionary
 # -------------------------
@@ -89,6 +115,12 @@ style_info = {
     },
 }
 
+sold_out=[
+'minto001_1',
+'minto001_2',
+'minto001_4'
+]
+
 # -------------------------
 # Build Catalog
 # -------------------------
@@ -154,9 +186,35 @@ for design in catalog.keys():
         images = sorted(catalog[design][item])
 
         cols = st.columns(4)
+        variant_id = f"{design}_{item}"
+        is_sold = variant_id in sold_out
+
+        cols = st.columns(4)
+
         for i, img in enumerate(images):
             with cols[i % 4]:
-                st.image(
-                    os.path.join(IMAGE_FOLDER, img),
-                    use_container_width=True
-                )
+
+                st.markdown('<div class="product-card">', unsafe_allow_html=True)
+
+                if is_sold:
+                    st.markdown('<div class="sold-overlay">SOLD OUT</div>', unsafe_allow_html=True)
+                    st.image(
+                        os.path.join(IMAGE_FOLDER, img),
+                        use_container_width=True,
+                        output_format="PNG"
+                    )
+                else:
+                    st.image(
+                        os.path.join(IMAGE_FOLDER, img),
+                        use_container_width=True
+                    )
+
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+
+        # for i, img in enumerate(images):
+        #     with cols[i % 4]:
+        #         st.image(
+        #             os.path.join(IMAGE_FOLDER, img),
+        #             use_container_width=True
+        #         )
