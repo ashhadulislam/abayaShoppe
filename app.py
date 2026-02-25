@@ -121,7 +121,8 @@ sold_out=[
 'minto001_4',
 'cnida001_2',
 'imp001_1',
-'bnida001_2'
+'bnida001_2',
+'zoom001_1'
 
 ]
 
