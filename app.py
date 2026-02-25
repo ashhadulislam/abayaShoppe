@@ -118,7 +118,11 @@ style_info = {
 sold_out=[
 'minto001_1',
 'minto001_2',
-'minto001_4'
+'minto001_4',
+'cnida001_2',
+'imp001_1',
+'bnida001_2'
+
 ]
 
 # -------------------------
