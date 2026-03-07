@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 
-IMAGE_FOLDER = "AbayaThumbs"
 
 st.set_page_config(layout="wide")
 
@@ -99,7 +98,7 @@ sold_out_Hyderabadi = [
 # -------------------------
 
 @st.cache_data
-def build_catalog():
+def build_catalog(IMAGE_FOLDER):
 
     catalog = {}
 
@@ -126,7 +125,7 @@ def build_catalog():
     return catalog
 
 
-catalog = build_catalog()
+
 
 # -------------------------
 # PAGE 1 : HYDERABADI
@@ -137,6 +136,7 @@ if page == "Hyderabadi":
 
     st.title("Hyderabadi Collection")
     st.write("Traditional silhouettes inspired by Hyderabadi elegance.")
+    catalog = build_catalog(IMAGE_FOLDER)
 
     for design in catalog.keys():
 
@@ -204,9 +204,9 @@ if page == "Hyderabadi":
 # PAGE 2 : UAE
 # -------------------------
 
-elif page == "UAE Luxury":
+elif page == "Desert Elegance":
 
-    st.title("UAE Luxury Collection")
+    st.title("Desert Elegance Collection")
 
     st.write("""
     Inspired by Gulf elegance and flowing silhouettes.
