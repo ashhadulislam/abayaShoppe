@@ -10,9 +10,20 @@ st.set_page_config(layout="wide")
 
 st.markdown("""
 <style>
+
 .product-card {
     position: relative;
+    overflow: hidden;
+    border-radius: 12px;
 }
+
+.product-card img,
+.product-card video {
+    width: 100%;
+    border-radius: 12px;
+}
+
+/* SOLD badge */
 
 .sold-overlay {
     position: absolute;
@@ -22,9 +33,53 @@ st.markdown("""
     color: white;
     padding: 6px 12px;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 6px;
+    z-index: 3;
 }
+
+/* bottom gradient overlay */
+
+.card-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(
+        transparent,
+        rgba(0,0,0,0.75)
+    );
+    color: white;
+}
+
+/* variant title */
+
+.variant-title {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* hover button */
+
+.hover-button {
+    margin-top: 8px;
+    display: none;
+}
+
+.product-card:hover .hover-button {
+    display: block;
+}
+
+.whatsapp-btn {
+    background-color: #25D366;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -38,8 +93,9 @@ st.sidebar.title("Musfira")
 page = st.sidebar.radio(
     "Collections",
     [
+        "Desert Elegance",
         "Hyderabadi",
-        "Desert Elegance"
+        
     ]
 )
 
@@ -93,6 +149,51 @@ sold_out_Hyderabadi = [
 ]
 
 
+style_info_Desert_Elegance = {
+
+    "uae002": {
+        "name": "Midnight Blue Luxe Abaya",
+        "desc": "Deep midnight blue abaya with subtle shimmer detailing and fine gold piping along the edges. Elegant and refined, ideal for evening or formal wear. Sizes available: S, M, L, XL."
+    },
+
+    "uae001": {
+        "name": "Rose Blush Flow Abaya",
+        "desc": "Soft blush pink abaya with flowing draped sleeves, paired with a rich maroon hijab. Comes with a matching niqab for a complete modest look. Sizes available: S, M, L, XL."
+    },
+
+    "uae003": {
+        "name": "Charcoal Grey Modern Abaya",
+        "desc": "Sophisticated charcoal grey abaya with a contemporary layered look and subtle floral texture. Minimal and modern for everyday elegance. Sizes available: S, M, L, XL."
+    },
+
+    "uae004": {
+        "name": "Sand Beige Embroidered Abaya",
+        "desc": "Light sand beige abaya with delicate blue embroidery on the sleeves, offering a refined and graceful appearance. Sizes available: S, M, L, XL."
+    },
+
+    "uae005": {
+        "name": "Desert Brown Heritage Abaya",
+        "desc": "Warm brown abaya featuring intricate golden embroidery on the sleeves. Rich earthy tones inspired by traditional desert elegance. Sizes available: S, M, L, XL."
+    },
+
+    "uae006": {
+        "name": "Ivory Pearl Classic Abaya",
+        "desc": "Soft ivory abaya with subtle feather-like patterning and matching cream hijab. Light, graceful and timeless. Sizes available: S, M, L, XL."
+    }
+
+}
+
+sold_out_Desert_Elegance = []
+
+prices_Desert_Elegance = {
+    "uae001": 2500,
+    "uae002": 2500,
+    "uae003": 2000,
+    "uae004": 2000,
+    "uae005": 2000,
+    "uae006": 2000,    
+}
+
 # -------------------------
 # Build Catalog
 # -------------------------
@@ -102,54 +203,68 @@ def build_catalog(IMAGE_FOLDER):
 
     catalog = {}
 
+    image_ext = (".png", ".jpg", ".jpeg", ".webp")
+    video_ext = (".mp4", ".mov", ".webm")
+
     files = os.listdir(IMAGE_FOLDER)
     files.sort(reverse=True)
 
     for f in files:
+        ext = os.path.splitext(f)[1].lower()
 
-        if not f.endswith(".png"):
+        if ext not in image_ext and ext not in video_ext:
             continue
-        
-        name = f.replace(".png","")
+
+        name = os.path.splitext(f)[0]
         parts = name.split("_")
 
         if len(parts) == 3:
 
-            design = parts[0]
+            design = parts[0]   # example: uae_001
             item = parts[1]
 
-            catalog.setdefault(design,{})
-            catalog[design].setdefault(item,[])
-            catalog[design][item].append(f)
+            catalog.setdefault(design, {})
+            catalog[design].setdefault(item, [])
+
+            media_type = "video" if ext in video_ext else "image"
+
+            catalog[design][item].append({
+                "file": f,
+                "type": media_type
+            })
 
     return catalog
 
 
+def render_collection(
+    title,
+    intro_text,
+    image_folder,
+    style_info,
+    prices,
+    sold_out
+):
 
+    st.title(title)
+    if intro_text:
+        st.write(intro_text)
 
-# -------------------------
-# PAGE 1 : HYDERABADI
-# -------------------------
-
-if page == "Hyderabadi":
-    IMAGE_FOLDER = "AbayaThumbs/Hyderabadi"
-
-    st.title("Hyderabadi Collection")
-    st.write("Traditional silhouettes inspired by Hyderabadi elegance.")
-    catalog = build_catalog(IMAGE_FOLDER)
+    catalog = build_catalog(image_folder)
+    print(f'catalog is {catalog}')
 
     for design in catalog.keys():
+        
 
         st.markdown("---")
 
-        info = style_info_Hyderabadi.get(design,{})
-        title = info.get("name",design.upper())
-        description = info.get("desc","")
-
-        st.header(title)
+        info = style_info.get(design, {})
+        name = info.get("name", design.upper())
+        description = info.get("desc", "")
+        print(design,description)
+        st.header(name)
         st.write(description)
 
-        price = prices_Hyderabadi.get(design,"N/A")
+        price = prices.get(design, "N/A")
         st.subheader(f"₹ {price}")
 
         items = sorted(catalog[design].keys())
@@ -158,46 +273,93 @@ if page == "Hyderabadi":
 
             st.markdown(f"### Variant {item}")
 
-            images = sorted(catalog[design][item])
+            media_files = catalog[design][item]
 
             variant_id = f"{design}_{item}"
-            is_sold = variant_id in sold_out_Hyderabadi
+            is_sold = variant_id in sold_out
 
             if not is_sold:
+                whatsapp_url = (
+                    f"https://wa.me/916291426885?text="
+                    f"Hi%20I%20am%20interested%20in%20{name}%20Variant%20{item}"
+                )
 
-                whatsapp_url = f"https://wa.me/916291426885?text=Hi%20I%20am%20interested%20in%20{title}%20Variant%20{item}"
+                st.markdown(
+                    f"""
+                    <a href="{whatsapp_url}" target="_blank">
+                    <button style="
+                    background-color:#25D366;
+                    color:white;
+                    padding:10px 18px;
+                    border:none;
+                    border-radius:6px;
+                    font-weight:bold;">
+                    Order on WhatsApp
+                    </button>
+                    </a>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-                st.markdown(f"""
-                <a href="{whatsapp_url}" target="_blank">
-                <button style="
-                background-color:#25D366;
-                color:white;
-                padding:10px 18px;
-                border:none;
-                border-radius:6px;
-                font-weight:bold;">
-                Order on WhatsApp
-                </button>
-                </a>
-                """, unsafe_allow_html=True)
 
-            cols = st.columns(4)
+            for i, media in enumerate(media_files):
 
-            for i,img in enumerate(images):
+                if i % 4 == 0:
+                    cols = st.columns(4)
 
                 with cols[i % 4]:
+
+                    path = os.path.join(image_folder, media["file"])
 
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
 
                     if is_sold:
                         st.markdown('<div class="sold-overlay">SOLD OUT</div>', unsafe_allow_html=True)
 
-                    st.image(
-                        os.path.join(IMAGE_FOLDER,img),
-                        use_container_width=True
-                    )
+                    if media["type"] == "image":
+                        st.image(path, use_container_width=True)
+
+                    elif media["type"] == "video":
+                        st.video(path)
+
+                    if not is_sold:
+                        whatsapp_url = (
+                            f"https://wa.me/916291426885?text="
+                            f"Hi%20I%20am%20interested%20in%20{name}%20Variant%20{item}"
+                        )
+
+                        st.markdown(f"""
+                        <div class="card-overlay">
+                            <div class="variant-title">Variant {item}</div>
+                            <div class="hover-button">
+                                <a href="{whatsapp_url}" target="_blank" class="whatsapp-btn">
+                                    Order on WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    else:
+                        st.markdown(f"""
+                        <div class="card-overlay">
+                            <div class="variant-title">Variant {item}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                     st.markdown('</div>', unsafe_allow_html=True)
+# -------------------------
+# PAGE 1 : HYDERABADI
+# -------------------------
+
+if page == "Hyderabadi":
+    render_collection(
+        title="Hyderabadi Collection",
+        intro_text="Traditional silhouettes inspired by Hyderabadi elegance.",
+        image_folder="AbayaThumbs/Hyderabadi",
+        style_info=style_info_Hyderabadi,
+        prices=prices_Hyderabadi,
+        sold_out=sold_out_Hyderabadi
+    )
 
 
 # -------------------------
@@ -205,17 +367,14 @@ if page == "Hyderabadi":
 # -------------------------
 
 elif page == "Desert Elegance":
-
-    st.title("Desert Elegance Collection")
-
-    st.write("""
-    Inspired by Gulf elegance and flowing silhouettes.
-    Premium fabrics and statement abayas.
-    """)
-
-    st.image(
-        "https://images.unsplash.com/photo-1520975922203-b8d66c3f6f8c",
-        use_container_width=True
+     render_collection(
+        title="Desert Elegance Collection",
+        intro_text="""
+        Inspired by Gulf elegance and flowing silhouettes.
+        Premium fabrics and statement abayas.
+        """,
+        image_folder="AbayaThumbs/DesertElegance",
+        style_info=style_info_Desert_Elegance,
+        prices=prices_Desert_Elegance,
+        sold_out=sold_out_Desert_Elegance
     )
-
-    st.info("UAE collection coming soon.")
