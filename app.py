@@ -211,6 +211,7 @@ def build_catalog(IMAGE_FOLDER):
 
     for f in files:
         ext = os.path.splitext(f)[1].lower()
+        print(ext)
 
         if ext not in image_ext and ext not in video_ext:
             continue
