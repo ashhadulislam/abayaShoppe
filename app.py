@@ -145,7 +145,8 @@ style_info_Hyderabadi = {
 
 sold_out_Hyderabadi = [
 'minto001_1','minto001_2','cnida001_2','cy001_2',
-'imp001_1','zoom001_1','mlb003_1','tktk001_1'
+'imp001_1','zoom001_1','mlb003_1','tktk001_1', 
+'blk003_2', 'minto001_4'
 ]
 
 
@@ -256,28 +257,42 @@ def render_collection(
     for design in catalog.keys():
         
 
-        st.markdown("---")
+        #st.markdown("---")
 
         info = style_info.get(design, {})
         name = info.get("name", design.upper())
         description = info.get("desc", "")
         print(design,description)
-        st.header(name)
-        st.write(description)
-
         price = prices.get(design, "N/A")
-        st.subheader(f"₹ {price}")
-
+        
         items = sorted(catalog[design].keys())
 
-        for item in items:
+        valid_items = [
+            item for item in items
+            if f"{design}_{item}" not in sold_out
+        ]
+
+        if not valid_items:
+            continue
+
+        for item_idx, item in enumerate(valid_items):
+
+
+            variant_id = f"{design}_{item}"
+            is_sold = variant_id in sold_out
+            if is_sold:
+                continue
+
+            if item_idx==0:
+                st.header(name)
+                st.write(description)        
+                st.subheader(f"₹ {price}")
 
             st.markdown(f"### Variant {item}")
 
             media_files = catalog[design][item]
 
-            variant_id = f"{design}_{item}"
-            is_sold = variant_id in sold_out
+            
 
             if not is_sold:
                 whatsapp_url = (
